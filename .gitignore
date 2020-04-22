@@ -138,5 +138,5 @@ dmypy.json
 cython_debug/
 
 # Ignore vim swap files
-.swo
-.swp
+*.swo
+*.swp
