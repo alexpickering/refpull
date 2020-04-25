@@ -141,5 +141,5 @@ cython_debug/
 *.swo
 *.swp
 
-# Ignore output pdf files
+# Ignore input pdf files
 *.pdf
