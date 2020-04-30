@@ -15,22 +15,18 @@ from pdfminer.pdfpage import PDFPage
 from io import StringIO
 import re
 import argparse
+import os
 
-class ref:
+class ref(object):
     """This class creates reference objects"""
     
-    def __init__(self, position, author_1, author_2, author_3, author_4, author_5, title, date, placeofpub, publication, etal):
-        self.position = position
-        self.author_1 = author_1
-        self.author_2 = author_2
-        self.author_3 = author_3
-        self.author_4 = author_4
-        self.author_5 = author_5
-        self.etal = etal
-        self.title = title
-        self.date = date
-        self.placeofpub = placeofpub
+    def __init__(self, title, date, placeofpub, publication, raw):
+        self.authors     = []
+        self.title       = title
+        self.date        = date
+        self.placeofpub  = placeofpub
         self.publication = publication
+        self.raw         = raw
 
 
 def pdf_to_text(path):
@@ -69,14 +65,27 @@ def ref_pull(text):
         # authors: (?=.*\()\b([A-Z][A-zÀ-ÿ]*-*\s*[A-zÀ-ÿ]*\s[A-Z]+)[,|\s]
         # whole entries: ([A-Z]+.*\n)
 
-    #text = re.sub(r'(\S)[ \t]*(?:\r\n|\n)[ \t]*(\S)', r"\1 \2", text)
-    #text = re.sub(r'(.+)\n', r'\1', text)
-    #text = re.sub(r'\n', r'\n\n', text)
-    #text = re.sub(r'\n\n', r'\r', text)
+    text = re.sub(r'(\S)[ \t]*(?:\r\n|\n)[ \t]*(\S)', r"\1 \2", text)
+    text = re.sub(r'(.+)\n', r'\1', text)
+    text = re.sub(r'\n', r'\n\n', text)
+    text = re.sub(r'\n\n', r'\r', text)
 
-    #return text.encode('utf-8')
+    # return text.encode('utf-8')
     return text
 
+def parse_to_list(refs):
+    ref_list = refs.split('\x0c')[0]
+    ref_list = ref_list.split('\r')
+    ref_list = [ref.strip() for ref in ref_list if ref.strip()]
+    return ref_list
+
+    
+def save_to_file(ref_list):
+    with open('output.txt', 'w+') as f:
+        for ix in range(len(ref_list)):
+            f.write("{}. {}\n".format(ix+1, ref_list[ix]))
+            #f.write(f"{ix+1}. {ref_list[ix]}\n")
+    
 
 def main():
     parser = argparse.ArgumentParser()
@@ -90,12 +99,14 @@ def main():
         pdf = args.filepath
 
     text = pdf_to_text(pdf)
-    refs = ref_pull(text)
-    if text == refs:
-        print("Error: reference text unaltered")
-    else:
-        print(refs)
-    
+    text_block = ref_pull(text)
+    if text == text_block:
+        raise Exception("Error: reference text unaltered")
+
+    refs = parse_to_list(text_block)
+    print(refs)
+    save_to_file(refs)
+
     #return (text)
 
 
