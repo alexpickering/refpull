@@ -15,9 +15,8 @@ from pdfminer.pdfpage import PDFPage
 from io import StringIO
 import re
 import argparse
-import os
 
-class ref(object):
+class Reference(object):
     """This class creates reference objects"""
     
     def __init__(self, title, date, placeofpub, publication, raw):
