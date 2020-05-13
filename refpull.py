@@ -1,8 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# TODO: get it running for one PDF, then customize LAParams to work for another one
-# 2. separate fixing pdf-converted text from MLA formatting
+# TODO: get working for second pdf
+
 
 "docstring"
 
@@ -12,9 +12,16 @@ from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.converter import TextConverter
 from pdfminer.layout import LAParams
 from pdfminer.pdfpage import PDFPage
+
+#from main import app
+import os
 from io import StringIO
-import re
 import argparse
+import re
+
+#DOWNLOAD_FOLDER = os.path.dirname(os.path.abspath(__file__)) + '/downloads/'
+
+#app.config['DOWNLOAD_FOLDER'] = DOWNLOAD_FOLDER
 
 class Reference(object):
     """This class creates reference objects"""
@@ -26,7 +33,6 @@ class Reference(object):
         self.placeofpub  = placeofpub
         self.publication = publication
         self.raw         = raw
-
 
 def pdf_to_text(path):
     manager = PDFResourceManager()
@@ -57,7 +63,7 @@ def ref_pull(text):
     if match:
         print("if stepped into")
         text = text[match.end():]
-        # TODO create objects called refs
+        # TODO create objects called References
         # pull info using regex, place into elements of objects
         
         # regex patterns: (?=.*\()\b([A-Z][A-zÀ-ÿ]*\s[A-Z]+)[,|\s] 
@@ -78,13 +84,32 @@ def parse_to_list(refs):
     ref_list = [ref.strip() for ref in ref_list if ref.strip()]
     return ref_list
 
+def second_parse_to_list(refs):
+    # TODO: add find duplicate entries (headers), and delete, adding special char after last one
+    pass
+    # return ref_list
+
     
-def save_to_file(ref_list):
-    with open('output.txt', 'w+') as f:
-        for ix in range(len(ref_list)):
-            f.write("{}. {}\n".format(ix+1, ref_list[ix]))
-            #f.write(f"{ix+1}. {ref_list[ix]}\n")
-    
+def save_to_file(ref_list, name):
+    if isinstance(ref_list, str):
+        with open(name + '.txt', 'w+') as f:
+            f.write(ref_list)
+    else:
+        with open(name + '.txt', 'w+') as f:
+            for ix in range(len(ref_list)):
+                f.write("{}. {}\n".format(ix+1, ref_list[ix]))
+                #f.write(f"{ix+1}. {ref_list[ix]}\n")
+
+
+def pdf_to_reflist(pdf):
+    text = pdf_to_text(pdf)
+    text_block = ref_pull(text)
+    if text == text_block:
+        raise Exception("Error: reference text unaltered")
+
+    refs = parse_to_list(text_block)
+    return refs
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -101,11 +126,13 @@ def main():
     text_block = ref_pull(text)
     if text == text_block:
         raise Exception("Error: reference text unaltered")
-
     refs = parse_to_list(text_block)
-    print(refs)
-    save_to_file(refs)
 
+
+    save_to_file(text_block, 'text_block')
+    save_to_file(refs, 'refs')
+    # refs = second_parse_to_list(text_block)
+    save_to_file(refs, 'refs2')
     #return (text)
 
 
