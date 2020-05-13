@@ -13,15 +13,11 @@ from pdfminer.converter import TextConverter
 from pdfminer.layout import LAParams
 from pdfminer.pdfpage import PDFPage
 
-#from main import app
 import os
 from io import StringIO
 import argparse
 import re
 
-#DOWNLOAD_FOLDER = os.path.dirname(os.path.abspath(__file__)) + '/downloads/'
-
-#app.config['DOWNLOAD_FOLDER'] = DOWNLOAD_FOLDER
 
 class Reference(object):
     """This class creates reference objects"""
