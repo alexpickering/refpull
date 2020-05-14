@@ -75,7 +75,7 @@ def pull_ref_text(text):
     return text
 
 def text_to_list(ref_text):
-    ref_list = refs.split('\x0c')[0]
+    ref_list = ref_text.split('\x0c')[0]
     ref_list = ref_list.split('\r')
     ref_list = [ref.strip() for ref in ref_list if ref.strip()]
     return ref_list
@@ -110,7 +110,7 @@ def pdf_to_reflist(pdf):
 def main():
     parser = argparse.ArgumentParser()
     #parser.add_argument('--filepath', type=argparse.FileType('r'))
-    parser.add_argument('--filepath', type=str)
+    parser.add_argument('--filepath', '-f', type=str)
     args = parser.parse_args()
 
     if not args.filepath:
