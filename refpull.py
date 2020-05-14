@@ -52,7 +52,7 @@ def pdf_to_text(path):
     return text
 
 
-def ref_pull(text):
+def pull_ref_text(text):
     start = r"\s*(references|bibliography)\s*"
     match = re.search(start, text, re.IGNORECASE)
     print("matched")
@@ -74,13 +74,13 @@ def ref_pull(text):
     # return text.encode('utf-8')
     return text
 
-def parse_to_list(refs):
+def text_to_list(ref_text):
     ref_list = refs.split('\x0c')[0]
     ref_list = ref_list.split('\r')
     ref_list = [ref.strip() for ref in ref_list if ref.strip()]
     return ref_list
 
-def second_parse_to_list(refs):
+def second_text_to_list(ref_text):
     # TODO: add find duplicate entries (headers), and delete, adding special char after last one
     pass
     # return ref_list
@@ -98,13 +98,13 @@ def save_to_file(ref_list, name):
 
 
 def pdf_to_reflist(pdf):
-    text = pdf_to_text(pdf)
-    text_block = ref_pull(text)
-    if text == text_block:
+    raw_text = pdf_to_text(pdf)
+    ref_text = pull_ref_text(raw_text)
+    if raw_text == ref_text:
         raise Exception("Error: reference text unaltered")
 
-    refs = parse_to_list(text_block)
-    return refs
+    ref_list = text_to_list(ref_text)
+    return ref_list
 
 
 def main():
@@ -118,18 +118,16 @@ def main():
     else:
         pdf = args.filepath
 
-    text = pdf_to_text(pdf)
-    text_block = ref_pull(text)
-    if text == text_block:
+    raw_text = pdf_to_text(pdf)
+    ref_text = pull_ref_text(raw_text)
+    if raw_text == ref_text:
         raise Exception("Error: reference text unaltered")
-    refs = parse_to_list(text_block)
+    ref_list = text_to_list(ref_text)
 
 
-    save_to_file(text_block, 'text_block')
-    save_to_file(refs, 'refs')
-    # refs = second_parse_to_list(text_block)
-    save_to_file(refs, 'refs2')
-    #return (text)
+    save_to_file(ref_text, 'ref_text')
+    save_to_file(ref_list, 'ref_list')
+    # return (text)
 
 
 if __name__ == '__main__':
