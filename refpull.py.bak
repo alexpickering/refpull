@@ -8,18 +8,20 @@
 
 __author__ = "Alex Pickering"
 
-from itertools import repeat
-
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.converter import TextConverter
 from pdfminer.layout import LAParams
 from pdfminer.pdfpage import PDFPage
 
+#from main import app
 import os
 from io import StringIO
 import argparse
 import re
 
+#DOWNLOAD_FOLDER = os.path.dirname(os.path.abspath(__file__)) + '/downloads/'
+
+#app.config['DOWNLOAD_FOLDER'] = DOWNLOAD_FOLDER
 
 class Reference(object):
     """This class creates reference objects"""
@@ -32,7 +34,6 @@ class Reference(object):
         self.publication = publication
         self.raw         = raw
 
-
 def pdf_to_text(path):
     manager = PDFResourceManager()
     retstr = StringIO()
@@ -41,25 +42,27 @@ def pdf_to_text(path):
     # https://github.com/pdfminer/pdfminer.six/blob/develop/pdfminer/layout.py
     layout = LAParams(line_margin=0.3)
     device = TextConverter(manager, retstr, laparams=layout)
-    filepath = open(path, 'rb') 
+    filepath = open(path, 'rb')
     interpreter = PDFPageInterpreter(manager, device)
 
     for page in PDFPage.get_pages(filepath, check_extractable=True):
         interpreter.process_page(page)
 
-    raw_text = retstr.getvalue()
+    text = retstr.getvalue()
 
     filepath.close()
     device.close()
     retstr.close()
-    return raw_text
+    return text
 
 
-def pull_ref_text(raw_text):
+def ref_pull(text):
     start = r"\s*(references|bibliography)\s*"
-    match = re.search(start, raw_text, re.IGNORECASE)
+    match = re.search(start, text, re.IGNORECASE)
+    print("matched")
     if match:
-        raw_text = raw_text[match.end():]
+        print("if stepped into")
+        text = text[match.end():]
         # TODO create objects called References
         # pull info using regex, place into elements of objects
         
@@ -67,28 +70,21 @@ def pull_ref_text(raw_text):
         # authors: (?=.*\()\b([A-Z][A-zÀ-ÿ]*-*\s*[A-zÀ-ÿ]*\s[A-Z]+)[,|\s]
         # whole entries: ([A-Z]+.*\n)
 
-    raw_text = re.sub(r'(\S)[ \t]*(?:\r\n|\n)[ \t]*(\S)', r"\1 \2", raw_text)
-    raw_text = re.sub(r'(.+)\n', r'\1', raw_text)
-    raw_text = re.sub(r'\n', r'\n\n', raw_text)
-    raw_text = re.sub(r'\n\n', r'\r', raw_text)
+    text = re.sub(r'(\S)[ \t]*(?:\r\n|\n)[ \t]*(\S)', r"\1 \2", text)
+    text = re.sub(r'(.+)\n', r'\1', text)
+    text = re.sub(r'\n', r'\n\n', text)
+    text = re.sub(r'\n\n', r'\r', text)
 
-    # return raw_text.encode('utf-8')
-    return raw_text
+    # return text.encode('utf-8')
+    return text
 
-def text_to_list(ref_text):
-    ref_list = ref_text.split('\x0c')[0]
-    # ref_list = ref_list.split('0x10')[0]
+def parse_to_list(refs):
+    ref_list = refs.split('\x0c')[0]
     ref_list = ref_list.split('\r')
     ref_list = [ref.strip() for ref in ref_list if ref.strip()]
-    '''
-    for elem in ref_list:
-        print(str(elem + '\n'))
-        # if elem.find('0x10'):
-            # ref_list = ref_list[:ref_list.index(elem)]
-    '''
     return ref_list
 
-def second_text_to_list(ref_text):
+def second_parse_to_list(refs):
     # TODO: add find duplicate entries (headers), and delete, adding special char after last one
     pass
     # return ref_list
@@ -106,19 +102,19 @@ def save_to_file(ref_list, name):
 
 
 def pdf_to_reflist(pdf):
-    raw_text = pdf_to_text(pdf)
-    ref_text = pull_ref_text(raw_text)
-    if raw_text == ref_text:
+    text = pdf_to_text(pdf)
+    text_block = ref_pull(text)
+    if text == text_block:
         raise Exception("Error: reference text unaltered")
 
-    ref_list = text_to_list(ref_text)
-    return ref_list
+    refs = parse_to_list(text_block)
+    return refs
 
 
 def main():
     parser = argparse.ArgumentParser()
     #parser.add_argument('--filepath', type=argparse.FileType('r'))
-    parser.add_argument('--filepath', '-f', type=str)
+    parser.add_argument('--filepath', type=str)
     args = parser.parse_args()
 
     if not args.filepath:
@@ -126,16 +122,18 @@ def main():
     else:
         pdf = args.filepath
 
-    raw_text = pdf_to_text(pdf)
-    ref_text = pull_ref_text(raw_text)
-    if raw_text == ref_text:
+    text = pdf_to_text(pdf)
+    text_block = ref_pull(text)
+    if text == text_block:
         raise Exception("Error: reference text unaltered")
-    ref_list = text_to_list(ref_text)
+    refs = parse_to_list(text_block)
 
 
-    save_to_file(ref_text, 'ref_text')
-    save_to_file(ref_list, 'ref_list')
-    # return (text)
+    save_to_file(text_block, 'text_block')
+    save_to_file(refs, 'refs')
+    # refs = second_parse_to_list(text_block)
+    save_to_file(refs, 'refs2')
+    #return (text)
 
 
 if __name__ == '__main__':

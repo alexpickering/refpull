@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<title>Results Page</title>
+<h1>Results Page</h1>
+<!-- <form method=post enctype=multipart/form-data>
+  <input type=file name=file>
+  <input type=submit value=Upload>
+</form>
+-->
+<body>
+    <p>Results to be displayed below</p>
+    <script>
+        var results = JSON.stringify(reflist, null, 2)
+        document.body.innerHTML = "<h1>Results: " + results"</h1>"
+    </script>
+    
+</body>

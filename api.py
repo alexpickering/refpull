@@ -46,11 +46,12 @@ def upload_file():
             flash('File successfully uploaded')
 
             # Get refpull to do something we want it to do
-            #text = refpull.pdf_to_text(local_fullpath)
-            #semi_parsed = refpull.ref_pull(text)
-            #reflist = refpull.parse_to_list(semi_parsed)
+            # raw_text = refpull.pdf_to_text(local_fullpath)
+            # ref_text = refpull.pull_ref_text(raw_text)
+            # reflist = refpull.text_to_list(ref_text)
             reflist = refpull.pdf_to_reflist(local_fullpath)
 
+            # return render_template('results.html')
             return json.dumps(reflist)
 
             #return redirect(url_for('uploaded_file', filename=filename))
